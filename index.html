@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#26070d">
-<title>轉珠妙法・祈福護佑</title>
+<title>祈福護佑・瑪瑙撥珠 V20</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#180509}
@@ -70,7 +70,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 </style>
 </head>
 <body>
-<audio style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" id="woodPlayer" src="wood.wav" preload="auto" loop playsinline></audio>
+<audio style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" id="woodPlayer" src="wood.m4a" preload="auto" playsinline></audio>
 <audio style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" id="bellPlayer" src="bell.mp3" preload="auto" playsinline></audio>
 <main id="stage">
  <canvas id="rear"></canvas>
@@ -102,8 +102,8 @@ const rc=rear.getContext('2d'),fc=front.getContext('2d');
 const glow=document.querySelector('#touchGlow'),soundButton=document.querySelector('#sound');
 const countDisplay=document.querySelector('#count'),resetButton=document.querySelector('#reset');
 const woodPlayer=document.querySelector('#woodPlayer'),bellPlayer=document.querySelector('#bellPlayer');
-let woodStopTimer=null,bellStopTimer=null,bellReady=false;
-if(woodPlayer){woodPlayer.preload='auto';woodPlayer.loop=true;woodPlayer.playsInline=true;woodPlayer.volume=.9;}
+let woodStopTimer=null,bellStopTimer=null,bellReady=false,woodPlayedThisGesture=false;
+if(woodPlayer){woodPlayer.preload='auto';woodPlayer.loop=false;woodPlayer.playsInline=true;woodPlayer.volume=.9;}
 if(bellPlayer){bellPlayer.preload='auto';bellPlayer.playsInline=true;bellPlayer.volume=1;bellPlayer.addEventListener('canplaythrough',()=>{bellReady=true;},{once:true});}
 const blessing=document.querySelector('#twelveBlessing'),buddhaReveal=document.querySelector('#buddhaReveal'),gaugeFill=document.querySelector('#gaugeFill'),beadLayers=[rear,front];
 let blessingTimer=null,goldTimer=null,buddhaTimer=null,buddhaFadeTimer=null;
@@ -223,13 +223,13 @@ function render(){
  }
 }
 function startWoodSound(){
- if(!soundOn||!woodPlayer)return;
+ // 每次手勢只播放一次，固定 0.3 秒；持續拖動不會延長音效。
+ if(!soundOn||!woodPlayer||woodPlayedThisGesture)return;
+ woodPlayedThisGesture=true;
  clearTimeout(woodStopTimer);
- if(woodPlayer.paused){
-  const p=woodPlayer.play();if(p&&p.catch)p.catch(()=>{});
- }
- // Play the bead sound for up to half a second after each movement; new movement refreshes the window.
- woodStopTimer=setTimeout(stopWoodSound,500);
+ try{woodPlayer.currentTime=0;}catch(_){}
+ const p=woodPlayer.play();if(p&&p.catch)p.catch(()=>{});
+ woodStopTimer=setTimeout(stopWoodSound,300);
 }
 function stopWoodSound(){
  clearTimeout(woodStopTimer);woodStopTimer=null;
@@ -303,7 +303,7 @@ function updateWave(delta){
 }
 function begin(e){
  if(bellPlayer&&bellPlayer.readyState===0){try{bellPlayer.load();}catch(_){}}
- active=true;gestureMoved=false;lastY=e.clientY;stage.setPointerCapture?.(e.pointerId);
+ active=true;gestureMoved=false;woodPlayedThisGesture=false;lastY=e.clientY;stage.setPointerCapture?.(e.pointerId);
  glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';glow.style.opacity='.9';
 
 }
